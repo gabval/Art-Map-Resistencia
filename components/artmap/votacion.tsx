@@ -248,13 +248,24 @@ export function Votacion({ obra, alVolver, alVotar }: VotacionProps) {
             <Button
               variant="outline"
               className="flex-1"
-              onClick={() => {
+              onClick={async () => {
                 if (navigator.share) {
-                  navigator.share({
-                    title: obra.titulo,
-                    text: `Mirá esta obra de arte en Resistencia: ${obra.titulo} por ${obra.autor}`,
-                    url: window.location.href,
-                  });
+                  try {
+                    await navigator.share({
+                      title: obra.titulo,
+                      text: `Mirá esta obra de arte en Resistencia: ${obra.titulo} por ${obra.autor}`,
+                      url: window.location.href,
+                    });
+                  } catch (error) {
+                    // El usuario canceló o el navegador no permite compartir
+                    if ((error as Error).name !== 'AbortError') {
+                      // Fallback: copiar al portapapeles
+                      await navigator.clipboard.writeText(window.location.href);
+                    }
+                  }
+                } else {
+                  // Fallback para navegadores sin Web Share API
+                  await navigator.clipboard.writeText(window.location.href);
                 }
               }}
             >
