@@ -7,6 +7,7 @@
 // ============================================
 
 import { useState, useCallback } from 'react';
+import { MapPin, Grid3X3, Heart, ClipboardList } from 'lucide-react';
 import { HeaderNavegacion, type SeccionActiva } from '@/components/artmap/header-navegacion';
 import { Relevamiento } from '@/components/artmap/relevamiento';
 import { Catalogo } from '@/components/artmap/catalogo';
@@ -17,6 +18,8 @@ import { obrasDemostracion } from '@/lib/datos-demo';
 export default function PaginaPrincipal() {
   const [seccionActiva, setSeccionActiva] = useState<SeccionActiva>('catalogo');
   const [obraSeleccionada, setObraSeleccionada] = useState<Obra | null>(null);
+  const [obras, setObras] = useState<Obra[]>(obrasDemostracion);
+  const [obrasVotadas, setObrasVotadas] = useState<Set<string>>(new Set());
 
   /**
    * Maneja la selección de una obra desde el catálogo
@@ -35,20 +38,50 @@ export default function PaginaPrincipal() {
   }, []);
 
   /**
-   * Maneja el guardado de un relevamiento
+   * Maneja el guardado de un relevamiento - agrega la obra al catálogo
    */
   const manejarGuardarRelevamiento = useCallback((datos: DatosRelevamiento) => {
-    console.log('[v0] Relevamiento guardado:', datos);
-    // Aquí iría la lógica para enviar al backend
+    const nuevaObra: Obra = {
+      id: `nueva-${Date.now()}`,
+      titulo: datos.titulo,
+      autor: datos.autor,
+      anio: datos.anio,
+      descripcion: datos.observaciones || 'Obra relevada recientemente',
+      categoria: datos.categoria,
+      material: datos.material,
+      coordenadas: datos.coordenadas,
+      direccion: `Lat: ${datos.coordenadas.latitud.toFixed(4)}, Lon: ${datos.coordenadas.longitud.toFixed(4)}`,
+      imagenUrl: datos.imagenUrl || '/obras/pensador-chaco.jpg',
+      estado: datos.estado,
+      cantidadVotos: 0,
+    };
+
+    setObras(obrasActuales => [nuevaObra, ...obrasActuales]);
   }, []);
 
   /**
-   * Maneja un voto exitoso
+   * Maneja un voto exitoso - incrementa el contador de votos
    */
   const manejarVoto = useCallback((obra: Obra, datosValidacion: DatosValidacionVoto) => {
-    console.log('[v0] Voto registrado:', { obra: obra.titulo, datosValidacion });
-    // Aquí iría la lógica para enviar al backend
-  }, []);
+    // Incrementar votos de la obra
+    setObras(obrasActuales => 
+      obrasActuales.map(o => 
+        o.id === obra.id 
+          ? { ...o, cantidadVotos: o.cantidadVotos + 1 }
+          : o
+      )
+    );
+
+    // Marcar la obra como votada
+    setObrasVotadas(votadas => new Set([...votadas, obra.id]));
+
+    // Actualizar la obra seleccionada si es la misma
+    if (obraSeleccionada?.id === obra.id) {
+      setObraSeleccionada(prev => 
+        prev ? { ...prev, cantidadVotos: prev.cantidadVotos + 1 } : null
+      );
+    }
+  }, [obraSeleccionada]);
 
   /**
    * Renderiza el contenido según la sección activa
@@ -66,7 +99,7 @@ export default function PaginaPrincipal() {
         return (
           <div className="p-4">
             <Catalogo 
-              obras={obrasDemostracion}
+              obras={obras}
               alSeleccionarObra={manejarSeleccionObra}
             />
           </div>
@@ -80,6 +113,7 @@ export default function PaginaPrincipal() {
                 obra={obraSeleccionada}
                 alVolver={manejarVolverCatalogo}
                 alVotar={manejarVoto}
+                yaVotada={obrasVotadas.has(obraSeleccionada.id)}
               />
             </div>
           );
@@ -88,12 +122,13 @@ export default function PaginaPrincipal() {
         return (
           <div className="p-4 flex items-center justify-center min-h-[60vh]">
             <div className="text-center text-muted-foreground">
-              <p className="text-lg mb-4">Seleccioná una obra del catálogo para votar</p>
+              <Heart className="h-16 w-16 mx-auto mb-4 opacity-30" />
+              <p className="text-lg mb-4">Selecciona una obra del catalogo para votar</p>
               <button
                 onClick={() => setSeccionActiva('catalogo')}
                 className="text-secondary underline hover:no-underline"
               >
-                Ir al catálogo
+                Ir al catalogo
               </button>
             </div>
           </div>
@@ -121,14 +156,14 @@ export default function PaginaPrincipal() {
           <NavBotonMovil
             activo={seccionActiva === 'relevamiento'}
             onClick={() => setSeccionActiva('relevamiento')}
-            icono="📍"
+            icono={<ClipboardList className="h-5 w-5" />}
             label="Relevar"
           />
           <NavBotonMovil
             activo={seccionActiva === 'catalogo'}
             onClick={() => setSeccionActiva('catalogo')}
-            icono="🎨"
-            label="Catálogo"
+            icono={<Grid3X3 className="h-5 w-5" />}
+            label="Catalogo"
           />
           <NavBotonMovil
             activo={seccionActiva === 'votacion'}
@@ -139,8 +174,9 @@ export default function PaginaPrincipal() {
                 setSeccionActiva('votacion');
               }
             }}
-            icono="❤️"
+            icono={<Heart className="h-5 w-5" />}
             label="Votar"
+            badge={obrasVotadas.size > 0 ? obrasVotadas.size : undefined}
           />
         </div>
       </nav>
@@ -155,23 +191,32 @@ function NavBotonMovil({
   activo, 
   onClick, 
   icono, 
-  label 
+  label,
+  badge
 }: { 
   activo: boolean; 
   onClick: () => void; 
-  icono: string; 
+  icono: React.ReactNode; 
   label: string;
+  badge?: number;
 }) {
   return (
     <button
       onClick={onClick}
-      className={`flex flex-col items-center justify-center gap-1 transition-colors ${
+      className={`relative flex flex-col items-center justify-center gap-1 transition-colors ${
         activo 
           ? 'text-secondary' 
           : 'text-muted-foreground hover:text-foreground'
       }`}
     >
-      <span className="text-xl">{icono}</span>
+      <span className="relative">
+        {icono}
+        {badge !== undefined && badge > 0 && (
+          <span className="absolute -top-1 -right-2 bg-secondary text-secondary-foreground text-[10px] font-bold rounded-full h-4 min-w-4 flex items-center justify-center px-1">
+            {badge}
+          </span>
+        )}
+      </span>
       <span className={`text-xs font-medium ${activo ? 'text-secondary' : ''}`}>
         {label}
       </span>

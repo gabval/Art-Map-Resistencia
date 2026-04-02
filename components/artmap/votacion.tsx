@@ -42,9 +42,10 @@ interface VotacionProps {
   obra: Obra;
   alVolver?: () => void;
   alVotar?: (obra: Obra, datosValidacion: DatosValidacionVoto) => void;
+  yaVotada?: boolean;
 }
 
-export function Votacion({ obra, alVolver, alVotar }: VotacionProps) {
+export function Votacion({ obra, alVolver, alVotar, yaVotada = false }: VotacionProps) {
   const [modalAbierto, setModalAbierto] = useState(false);
   const [datosValidacion, setDatosValidacion] = useState<DatosValidacionVoto>({
     dni: '',
@@ -277,12 +278,12 @@ export function Votacion({ obra, alVolver, alVotar }: VotacionProps) {
               className="flex-1 bg-secondary text-secondary-foreground hover:bg-secondary/90"
               size="lg"
               onClick={() => setModalAbierto(true)}
-              disabled={estadoVoto === 'exitoso'}
+              disabled={estadoVoto === 'exitoso' || yaVotada}
             >
-              {estadoVoto === 'exitoso' ? (
+              {estadoVoto === 'exitoso' || yaVotada ? (
                 <>
                   <CheckCircle2 className="mr-2 h-5 w-5" />
-                  ¡Voto registrado!
+                  {yaVotada ? 'Ya votaste esta obra' : '¡Voto registrado!'}
                 </>
               ) : (
                 <>

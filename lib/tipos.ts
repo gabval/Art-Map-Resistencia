@@ -43,9 +43,14 @@ export interface Coordenadas {
 export interface DatosRelevamiento {
   coordenadas: Coordenadas;
   titulo: string;
+  autor: string;
+  anio: number;
+  material: MaterialObra;
+  categoria: CategoriaObra;
   estado: EstadoObra;
   observaciones: string;
   fechaRelevamiento: Date;
+  imagenUrl?: string;
 }
 
 /**

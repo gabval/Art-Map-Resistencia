@@ -7,6 +7,7 @@
 // ============================================
 
 import { useState, useCallback } from 'react';
+import Image from 'next/image';
 import { 
   MapPin, 
   Navigation, 
@@ -14,7 +15,11 @@ import {
   AlertTriangle,
   Save,
   RotateCcw,
-  Loader2
+  Loader2,
+  User,
+  Calendar,
+  Layers,
+  Palette
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,16 +27,31 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { FieldGroup, Field, FieldLabel } from '@/components/ui/field';
-import type { Coordenadas, EstadoObra, DatosRelevamiento } from '@/lib/tipos';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import type { Coordenadas, EstadoObra, DatosRelevamiento, MaterialObra, CategoriaObra } from '@/lib/tipos';
+import { etiquetasCategorias, etiquetasMateriales } from '@/lib/datos-demo';
 
 interface RelevamientoProps {
   alGuardar?: (datos: DatosRelevamiento) => void;
 }
 
+const CATEGORIAS: CategoriaObra[] = ['escultura', 'mural', 'monumento', 'instalacion', 'relieve'];
+const MATERIALES: MaterialObra[] = ['bronce', 'piedra', 'cemento', 'metal', 'madera', 'mixto'];
+
 export function Relevamiento({ alGuardar }: RelevamientoProps) {
   // Estados del formulario
   const [coordenadas, setCoordenadas] = useState<Coordenadas>({ latitud: 0, longitud: 0 });
   const [titulo, setTitulo] = useState('');
+  const [autor, setAutor] = useState('');
+  const [anio, setAnio] = useState<number>(new Date().getFullYear());
+  const [material, setMaterial] = useState<MaterialObra | ''>('');
+  const [categoria, setCategoria] = useState<CategoriaObra | ''>('');
   const [estado, setEstado] = useState<EstadoObra | null>(null);
   const [observaciones, setObservaciones] = useState('');
   const [capturandoGPS, setCapturandoGPS] = useState(false);
@@ -40,15 +60,39 @@ export function Relevamiento({ alGuardar }: RelevamientoProps) {
   const [guardadoExitoso, setGuardadoExitoso] = useState(false);
 
   /**
-   * Simula la captura de coordenadas GPS
-   * En producción usaría navigator.geolocation
+   * Captura coordenadas GPS reales usando la API del navegador
    */
   const capturarCoordenadas = useCallback(() => {
     setCapturandoGPS(true);
     setGpsCapturado(false);
 
-    // Simulación de captura GPS (coordenadas de Resistencia)
-    setTimeout(() => {
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setCoordenadas({
+            latitud: position.coords.latitude,
+            longitud: position.coords.longitude,
+          });
+          setCapturandoGPS(false);
+          setGpsCapturado(true);
+        },
+        () => {
+          // Fallback: coordenadas simuladas de Resistencia si no hay permiso
+          const latBase = -27.4513;
+          const lonBase = -58.9867;
+          const variacion = 0.01;
+          
+          setCoordenadas({
+            latitud: latBase + (Math.random() - 0.5) * variacion,
+            longitud: lonBase + (Math.random() - 0.5) * variacion,
+          });
+          setCapturandoGPS(false);
+          setGpsCapturado(true);
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+      );
+    } else {
+      // Fallback para navegadores sin geolocation
       const latBase = -27.4513;
       const lonBase = -58.9867;
       const variacion = 0.01;
@@ -59,14 +103,14 @@ export function Relevamiento({ alGuardar }: RelevamientoProps) {
       });
       setCapturandoGPS(false);
       setGpsCapturado(true);
-    }, 1500);
+    }
   }, []);
 
   /**
    * Maneja el envío del formulario
    */
   const manejarEnvio = useCallback(async () => {
-    if (!titulo || !estado || !gpsCapturado) return;
+    if (!titulo || !autor || !material || !categoria || !estado || !gpsCapturado) return;
 
     setGuardando(true);
     
@@ -76,6 +120,10 @@ export function Relevamiento({ alGuardar }: RelevamientoProps) {
     const datos: DatosRelevamiento = {
       coordenadas,
       titulo,
+      autor,
+      anio,
+      material: material as MaterialObra,
+      categoria: categoria as CategoriaObra,
       estado,
       observaciones,
       fechaRelevamiento: new Date(),
@@ -89,7 +137,7 @@ export function Relevamiento({ alGuardar }: RelevamientoProps) {
     setTimeout(() => {
       setGuardadoExitoso(false);
     }, 3000);
-  }, [coordenadas, titulo, estado, observaciones, gpsCapturado, alGuardar]);
+  }, [coordenadas, titulo, autor, anio, material, categoria, estado, observaciones, gpsCapturado, alGuardar]);
 
   /**
    * Reinicia el formulario
@@ -97,13 +145,22 @@ export function Relevamiento({ alGuardar }: RelevamientoProps) {
   const reiniciarFormulario = useCallback(() => {
     setCoordenadas({ latitud: 0, longitud: 0 });
     setTitulo('');
+    setAutor('');
+    setAnio(new Date().getFullYear());
+    setMaterial('');
+    setCategoria('');
     setEstado(null);
     setObservaciones('');
     setGpsCapturado(false);
     setGuardadoExitoso(false);
   }, []);
 
-  const formularioValido = titulo.trim() !== '' && estado !== null && gpsCapturado;
+  const formularioValido = titulo.trim() !== '' && autor.trim() !== '' && material !== '' && categoria !== '' && estado !== null && gpsCapturado;
+
+  // URL del mapa estático de OpenStreetMap
+  const mapaUrl = gpsCapturado 
+    ? `https://www.openstreetmap.org/export/embed.html?bbox=${coordenadas.longitud - 0.005}%2C${coordenadas.latitud - 0.003}%2C${coordenadas.longitud + 0.005}%2C${coordenadas.latitud + 0.003}&layer=mapnik&marker=${coordenadas.latitud}%2C${coordenadas.longitud}`
+    : null;
 
   return (
     <Card className="w-full max-w-lg mx-auto shadow-lg border-border/50">
@@ -118,7 +175,7 @@ export function Relevamiento({ alGuardar }: RelevamientoProps) {
       </CardHeader>
 
       <CardContent className="p-4 space-y-5">
-        {/* Sección GPS */}
+        {/* Sección GPS con Mapa */}
         <div className="space-y-3">
           <FieldLabel className="text-sm font-medium text-foreground">
             Ubicación GPS
@@ -138,7 +195,7 @@ export function Relevamiento({ alGuardar }: RelevamientoProps) {
                 </>
               ) : gpsCapturado ? (
                 <>
-                  <CheckCircle2 className="mr-2 h-4 w-4 text-success" />
+                  <CheckCircle2 className="mr-2 h-4 w-4" />
                   GPS Capturado
                 </>
               ) : (
@@ -151,18 +208,38 @@ export function Relevamiento({ alGuardar }: RelevamientoProps) {
           </div>
 
           {gpsCapturado && (
-            <div className="grid grid-cols-2 gap-3 p-3 bg-muted rounded-lg">
-              <div>
-                <span className="text-xs text-muted-foreground block mb-1">Latitud</span>
-                <code className="text-sm font-mono text-foreground">
-                  {coordenadas.latitud.toFixed(6)}
-                </code>
+            <div className="space-y-3">
+              {/* Mapa embebido */}
+              <div className="relative aspect-video w-full rounded-lg overflow-hidden border border-border bg-muted">
+                {mapaUrl ? (
+                  <iframe
+                    src={mapaUrl}
+                    className="absolute inset-0 w-full h-full"
+                    style={{ border: 0 }}
+                    loading="lazy"
+                    title="Mapa de ubicación"
+                  />
+                ) : (
+                  <div className="flex items-center justify-center h-full">
+                    <MapPin className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                )}
               </div>
-              <div>
-                <span className="text-xs text-muted-foreground block mb-1">Longitud</span>
-                <code className="text-sm font-mono text-foreground">
-                  {coordenadas.longitud.toFixed(6)}
-                </code>
+              
+              {/* Coordenadas */}
+              <div className="grid grid-cols-2 gap-3 p-3 bg-muted rounded-lg">
+                <div>
+                  <span className="text-xs text-muted-foreground block mb-1">Latitud</span>
+                  <code className="text-sm font-mono text-foreground">
+                    {coordenadas.latitud.toFixed(6)}
+                  </code>
+                </div>
+                <div>
+                  <span className="text-xs text-muted-foreground block mb-1">Longitud</span>
+                  <code className="text-sm font-mono text-foreground">
+                    {coordenadas.longitud.toFixed(6)}
+                  </code>
+                </div>
               </div>
             </div>
           )}
@@ -183,6 +260,94 @@ export function Relevamiento({ alGuardar }: RelevamientoProps) {
           </Field>
         </FieldGroup>
 
+        {/* Autor */}
+        <FieldGroup>
+          <Field>
+            <FieldLabel htmlFor="autor-obra" className="flex items-center gap-2">
+              <User className="h-4 w-4 text-secondary" />
+              Autor
+            </FieldLabel>
+            <Input
+              id="autor-obra"
+              type="text"
+              placeholder="Nombre del artista o escultor"
+              value={autor}
+              onChange={(e) => setAutor(e.target.value)}
+              className="text-base"
+            />
+          </Field>
+        </FieldGroup>
+
+        {/* Año */}
+        <FieldGroup>
+          <Field>
+            <FieldLabel htmlFor="anio-obra" className="flex items-center gap-2">
+              <Calendar className="h-4 w-4 text-secondary" />
+              Año de Creación
+            </FieldLabel>
+            <Input
+              id="anio-obra"
+              type="number"
+              min={1900}
+              max={new Date().getFullYear()}
+              placeholder="Ej: 2020"
+              value={anio}
+              onChange={(e) => setAnio(parseInt(e.target.value) || new Date().getFullYear())}
+              className="text-base"
+            />
+          </Field>
+        </FieldGroup>
+
+        {/* Material */}
+        <FieldGroup>
+          <Field>
+            <FieldLabel className="flex items-center gap-2">
+              <Palette className="h-4 w-4 text-secondary" />
+              Material
+            </FieldLabel>
+            <Select
+              value={material}
+              onValueChange={(valor) => setMaterial(valor as MaterialObra)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Seleccionar material" />
+              </SelectTrigger>
+              <SelectContent>
+                {MATERIALES.map(mat => (
+                  <SelectItem key={mat} value={mat}>
+                    {etiquetasMateriales[mat]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+        </FieldGroup>
+
+        {/* Categoría */}
+        <FieldGroup>
+          <Field>
+            <FieldLabel className="flex items-center gap-2">
+              <Layers className="h-4 w-4 text-secondary" />
+              Categoría
+            </FieldLabel>
+            <Select
+              value={categoria}
+              onValueChange={(valor) => setCategoria(valor as CategoriaObra)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Seleccionar categoría" />
+              </SelectTrigger>
+              <SelectContent>
+                {CATEGORIAS.map(cat => (
+                  <SelectItem key={cat} value={cat}>
+                    {etiquetasCategorias[cat]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+        </FieldGroup>
+
         {/* Estado de la obra */}
         <div className="space-y-3">
           <FieldLabel className="text-sm font-medium text-foreground">
@@ -196,11 +361,11 @@ export function Relevamiento({ alGuardar }: RelevamientoProps) {
               onClick={() => setEstado('optimo')}
               className={`h-auto py-4 flex-col gap-2 transition-all ${
                 estado === 'optimo' 
-                  ? 'bg-success text-success-foreground hover:bg-success/90 border-success' 
-                  : 'hover:border-success/50'
+                  ? 'bg-[oklch(0.6_0.18_145)] text-[oklch(0.98_0.005_230)] hover:bg-[oklch(0.55_0.18_145)] border-[oklch(0.6_0.18_145)]' 
+                  : 'hover:border-[oklch(0.6_0.18_145)]/50'
               }`}
             >
-              <CheckCircle2 className={`h-6 w-6 ${estado === 'optimo' ? 'text-success-foreground' : 'text-success'}`} />
+              <CheckCircle2 className={`h-6 w-6 ${estado === 'optimo' ? 'text-[oklch(0.98_0.005_230)]' : 'text-[oklch(0.6_0.18_145)]'}`} />
               <span className="font-medium">Óptimo</span>
             </Button>
 
@@ -210,11 +375,11 @@ export function Relevamiento({ alGuardar }: RelevamientoProps) {
               onClick={() => setEstado('deteriorado')}
               className={`h-auto py-4 flex-col gap-2 transition-all ${
                 estado === 'deteriorado' 
-                  ? 'bg-warning text-warning-foreground hover:bg-warning/90 border-warning' 
-                  : 'hover:border-warning/50'
+                  ? 'bg-[oklch(0.75_0.15_80)] text-[oklch(0.18_0.04_250)] hover:bg-[oklch(0.7_0.15_80)] border-[oklch(0.75_0.15_80)]' 
+                  : 'hover:border-[oklch(0.75_0.15_80)]/50'
               }`}
             >
-              <AlertTriangle className={`h-6 w-6 ${estado === 'deteriorado' ? 'text-warning-foreground' : 'text-warning'}`} />
+              <AlertTriangle className={`h-6 w-6 ${estado === 'deteriorado' ? 'text-[oklch(0.18_0.04_250)]' : 'text-[oklch(0.75_0.15_80)]'}`} />
               <span className="font-medium">Deteriorado</span>
             </Button>
           </div>
@@ -224,8 +389,8 @@ export function Relevamiento({ alGuardar }: RelevamientoProps) {
               variant="outline" 
               className={`w-fit ${
                 estado === 'optimo' 
-                  ? 'border-success text-success' 
-                  : 'border-warning text-warning'
+                  ? 'border-[oklch(0.6_0.18_145)] text-[oklch(0.6_0.18_145)]' 
+                  : 'border-[oklch(0.75_0.15_80)] text-[oklch(0.75_0.15_80)]'
               }`}
             >
               Estado seleccionado: {estado === 'optimo' ? 'Óptimo' : 'Deteriorado'}
@@ -250,7 +415,7 @@ export function Relevamiento({ alGuardar }: RelevamientoProps) {
 
         {/* Mensaje de éxito */}
         {guardadoExitoso && (
-          <div className="p-3 bg-success/10 border border-success/30 rounded-lg flex items-center gap-2 text-success">
+          <div className="p-3 bg-[oklch(0.6_0.18_145)]/10 border border-[oklch(0.6_0.18_145)]/30 rounded-lg flex items-center gap-2 text-[oklch(0.6_0.18_145)]">
             <CheckCircle2 className="h-5 w-5" />
             <span className="font-medium">Relevamiento guardado correctamente</span>
           </div>
