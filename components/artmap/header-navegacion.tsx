@@ -6,12 +6,12 @@
 // Equipo JGJ - Modelo COPROMAR
 // ============================================
 
-import { Palette, MapPin, Grid3X3, Heart, Menu, X } from 'lucide-react';
+import { Palette, MapPin, Grid3X3, Heart, Menu, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useState } from 'react';
 
-export type SeccionActiva = 'relevamiento' | 'catalogo' | 'votacion';
+export type SeccionActiva = 'relevamiento' | 'catalogo' | 'votacion' | 'leaderboard';
 
 interface HeaderNavegacionProps {
   seccionActiva: SeccionActiva;
