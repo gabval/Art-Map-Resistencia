@@ -93,3 +93,12 @@ export interface DatosValidacionVoto {
  * Estado del voto
  */
 export type EstadoVoto = 'pendiente' | 'procesando' | 'exitoso' | 'error';
+
+/**
+ * Datos de un votante para el leaderboard
+ */
+export interface Votante {
+  dni: string;
+  nombre?: string;
+  cantidadVotos: number;
+}

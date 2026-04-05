@@ -7,11 +7,12 @@
 // ============================================
 
 import { useState, useCallback } from 'react';
-import { MapPin, Grid3X3, Heart, ClipboardList } from 'lucide-react';
+import { MapPin, Grid3X3, Heart, ClipboardList, Trophy } from 'lucide-react';
 import { HeaderNavegacion, type SeccionActiva } from '@/components/artmap/header-navegacion';
 import { Relevamiento } from '@/components/artmap/relevamiento';
 import { Catalogo } from '@/components/artmap/catalogo';
 import { Votacion } from '@/components/artmap/votacion';
+import { Leaderboard } from '@/components/artmap/leaderboard';
 import type { Obra, DatosRelevamiento, DatosValidacionVoto } from '@/lib/tipos';
 import { obrasDemostracion } from '@/lib/datos-demo';
 
@@ -134,25 +135,32 @@ export default function PaginaPrincipal() {
           </div>
         );
 
+      case 'leaderboard':
+        return (
+          <div className="p-4">
+            <Leaderboard obras={obras} />
+          </div>
+        );
+
       default:
         return null;
     }
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col relative">
       <HeaderNavegacion 
         seccionActiva={seccionActiva}
         alCambiarSeccion={setSeccionActiva}
       />
       
-      <main className="pb-20">
+      <main className="pb-20 flex-grow">
         {renderizarContenido()}
       </main>
 
       {/* Navegación inferior mobile */}
-      <nav className="fixed bottom-0 left-0 right-0 md:hidden bg-card border-t border-border/40 safe-area-inset-bottom">
-        <div className="grid grid-cols-3 h-16">
+      <nav className="fixed bottom-0 left-0 right-0 md:hidden bg-card border-t border-border/40 safe-area-inset-bottom z-40">
+        <div className="grid grid-cols-4 h-16">
           <NavBotonMovil
             activo={seccionActiva === 'relevamiento'}
             onClick={() => setSeccionActiva('relevamiento')}
@@ -177,6 +185,12 @@ export default function PaginaPrincipal() {
             icono={<Heart className="h-5 w-5" />}
             label="Votar"
             badge={obrasVotadas.size > 0 ? obrasVotadas.size : undefined}
+          />
+          <NavBotonMovil
+            activo={seccionActiva === 'leaderboard'}
+            onClick={() => setSeccionActiva('leaderboard')}
+            icono={<Trophy className="h-5 w-5" />}
+            label="Top"
           />
         </div>
       </nav>

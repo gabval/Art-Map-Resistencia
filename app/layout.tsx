@@ -11,7 +11,6 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: 'ArtMap Resistencia | Equipo JGJ',
   description: 'Aplicación de relevamiento y votación de obras de arte urbano en Resistencia, Chaco - Modelo COPROMAR',
-  generator: 'v0.app',
   keywords: ['arte urbano', 'Resistencia', 'Chaco', 'relevamiento', 'COPROMAR', 'esculturas'],
   authors: [{ name: 'Equipo JGJ' }],
   icons: {
@@ -41,16 +40,25 @@ export const viewport: Viewport = {
   userScalable: false,
 }
 
+import { ThemeProvider } from '@/components/theme-provider'
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
   return (
-    <html lang="es">
-      <body className={`${inter.variable} font-sans antialiased`}>
-        {children}
-        <Analytics />
+    <html lang="es" suppressHydrationWarning>
+      <body className={`${inter.variable} font-sans antialiased`} suppressHydrationWarning>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+          <Analytics />
+        </ThemeProvider>
       </body>
     </html>
   )

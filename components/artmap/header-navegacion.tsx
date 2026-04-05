@@ -6,12 +6,13 @@
 // Equipo JGJ - Modelo COPROMAR
 // ============================================
 
-import { Palette, MapPin, Grid3X3, Heart, Menu, X } from 'lucide-react';
+import { Palette, MapPin, Grid3X3, Heart, Menu, X, Trophy, Moon, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useTheme } from 'next-themes';
 
-export type SeccionActiva = 'relevamiento' | 'catalogo' | 'votacion';
+export type SeccionActiva = 'relevamiento' | 'catalogo' | 'votacion' | 'leaderboard';
 
 interface HeaderNavegacionProps {
   seccionActiva: SeccionActiva;
@@ -22,10 +23,17 @@ const SECCIONES = [
   { id: 'relevamiento' as const, label: 'Relevamiento', icono: MapPin },
   { id: 'catalogo' as const, label: 'Catálogo', icono: Grid3X3 },
   { id: 'votacion' as const, label: 'Votación', icono: Heart },
+  { id: 'leaderboard' as const, label: 'Top Obras', icono: Trophy },
 ];
 
 export function HeaderNavegacion({ seccionActiva, alCambiarSeccion }: HeaderNavegacionProps) {
   const [menuAbierto, setMenuAbierto] = useState(false);
+  const { theme, setTheme } = useTheme();
+  const [montado, setMontado] = useState(false);
+
+  useEffect(() => {
+    setMontado(true);
+  }, []);
 
   const manejarCambioSeccion = (seccion: SeccionActiva) => {
     alCambiarSeccion(seccion);
@@ -66,11 +74,21 @@ export function HeaderNavegacion({ seccionActiva, alCambiarSeccion }: HeaderNave
           ))}
         </nav>
 
-        {/* Badge equipo */}
-        <div className="hidden md:flex items-center">
+        {/* Badge equipo y Theme Toggle */}
+        <div className="hidden md:flex items-center gap-2">
           <span className="text-xs bg-secondary/20 px-2 py-1 rounded-full">
             Equipo JGJ
           </span>
+          {montado && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              className="text-primary-foreground/80 hover:text-primary-foreground"
+            >
+              {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </Button>
+          )}
         </div>
 
         {/* Menú Mobile */}
@@ -118,7 +136,26 @@ export function HeaderNavegacion({ seccionActiva, alCambiarSeccion }: HeaderNave
               </nav>
 
               {/* Footer del sheet */}
-              <div className="mt-auto pb-4">
+              <div className="mt-auto pb-4 space-y-4">
+                {montado && (
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start gap-3 bg-transparent border-secondary/30 hover:bg-secondary/20 text-primary-foreground"
+                    onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                  >
+                    {theme === 'dark' ? (
+                      <>
+                        <Sun className="h-5 w-5" />
+                        Modo Claro
+                      </>
+                    ) : (
+                      <>
+                        <Moon className="h-5 w-5" />
+                        Modo Oscuro
+                      </>
+                    )}
+                  </Button>
+                )}
                 <div className="p-4 rounded-lg bg-secondary/20 text-sm">
                   <p className="font-medium mb-1">Modelo COPROMAR</p>
                   <p className="text-xs text-primary-foreground/70">

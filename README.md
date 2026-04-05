@@ -1,35 +1,62 @@
-# art-map-resistencia-frontend
+# ArtMap Resistencia - Frontend 🎨📍
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [v0](https://v0.app).
+**ArtMap Resistencia** es la interfaz de usuario de una solución integral diseñada para la gestión, relevamiento y promoción del patrimonio artístico de la "Ciudad de las Esculturas". Este proyecto forma parte del desarrollo del escenario **COPROMAR** para la cátedra de **Ingeniería de Software III (UCP)**.
 
-## Built with v0
+---
 
-This repository is linked to a [v0](https://v0.app) project. You can continue developing by visiting the link below -- start new chats to make changes, and v0 will push commits directly to this repo. Every merge to `main` will automatically deploy.
+## 🚀 Propósito del Sistema
+El frontend está diseñado con un enfoque **Mobile-First**, garantizando que los relevadores de la Subsecretaría de Cultura puedan registrar obras en tiempo real y que los ciudadanos de Resistencia participen activamente en el concurso de esculturas mediante un sistema de votación transparente.
 
-[Continue working on v0 →](https://v0.app/chat/projects/prj_qPa3n4j37qNgluFXgzgjetxVkAzI)
+## ✨ Módulos Implementados
+* **Modo Relevador:** Interfaz optimizada para la captura de datos en campo, incluyendo geolocalización GPS, registro fotográfico y estado de conservación.
+* **Catálogo Público:** Mapa interactivo de la ciudad con filtros dinámicos por autor, material y categoría de obra.
+* **Sistema de Votación:** Flujo de validación de identidad (DNI/Teléfono) y emisión de voto electrónico para el certamen anual.
 
-## Getting Started
+---
 
-First, run the development server:
+## 🛠️ Stack Tecnológico
+* **Core:** React.js / Vite (Arquitectura de componentes modulares).
+* **Estilos:** Tailwind CSS (Diseño responsive y tokens de color Navy/Teal).
+* **Iconografía:** Lucide-React / Heroicons.
+* **Mapas:** Integración con API de Google Maps / Leaflet.
+* **Gestión de Estado:** Context API / Hooks personalizados.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 📊 Métrica de Ingeniería y Estimación
+El desarrollo se basó en una estimación científica utilizando el método de **Puntos de Función (IFPUG Standard)**, asegurando la trazabilidad entre requerimientos y esfuerzo:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+* **Tamaño Funcional:** 53 AFP (Puntos de Función Ajustados).
+* **Esfuerzo Técnico:** 636 Horas Hombre.
+* **Productividad Estimada:** 12 hs/PF.
+* **Presupuesto Proyectado:** $13.365 USD (Incluye Infraestructura Cloud y Soporte).
 
-## Learn More
+---
 
-To learn more, take a look at the following resources:
+## 👥 Equipo de Desarrollo (JGJ)
+* **Gabriel Fagundez** - Lead Developer (Arquitectura y Frontend).
+* **Jazmín Chanampa** - Analista de Dominio (Requerimientos y Validación).
+* **Juan Ignacio Gualtieri** - Quality Assurance (Testing y Auditoría de Calidad).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-- [v0 Documentation](https://v0.app/docs) - learn about v0 and how to use it.
+---
 
-<a href="https://v0.app/chat/api/kiro/clone/gabval/art-map-resistencia-frontend" alt="Open in Kiro"><img src="https://pdgvvgmkdvyeydso.public.blob.vercel-storage.com/open%20in%20kiro.svg?sanitize=true" /></a>
+## ⚙️ Instalación y Ejecución
+
+1.  **Clonar el repositorio:**
+    ```bash
+    git clone [https://github.com/gabval/art-map-resistencia-frontend.git](https://github.com/gabval/art-map-resistencia-frontend.git)
+    ```
+2.  **Instalar dependencias:**
+    ```bash
+    npm install
+    ```
+3.  **Iniciar entorno de desarrollo:**
+    ```bash
+    npm run dev
+    ```
+
+---
+
+### 🏛️ Institución
+**Universidad de la Cuenca del Plata (UCP)** Facultad de Ingeniería y Tecnología  
+Corrientes, Argentina - 2026.
