@@ -22,6 +22,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { TarjetaObra } from './tarjeta-obra';
 import type { Obra, FiltrosCatalogo, CategoriaObra, MaterialObra } from '@/lib/tipos';
+import dynamic from 'next/dynamic';
+
+const MapaCatalogo = dynamic(() => import('./mapa-catalogo'), { ssr: false });
 import { 
   obrasDemostracion, 
   autoresUnicos, 
@@ -323,16 +326,9 @@ export function Catalogo({ obras = obrasDemostracion, alSeleccionarObra }: Catal
               )}
             </>
           ) : (
-            /* Vista de mapa (placeholder) */
-            <Card className="aspect-[4/3] lg:aspect-[16/9] flex items-center justify-center bg-muted">
-              <div className="text-center text-muted-foreground">
-                <Map className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                <h3 className="text-lg font-medium mb-2">Vista de Mapa</h3>
-                <p className="text-sm max-w-md">
-                  Aquí se mostrará un mapa interactivo con la ubicación de las {obrasFiltradas.length} obras
-                </p>
-              </div>
-            </Card>
+            <div className="h-[600px] w-full">
+              <MapaCatalogo obras={obrasFiltradas} alSeleccionarObra={alSeleccionarObra} />
+            </div>
           )}
         </div>
       </div>
