@@ -23,16 +23,6 @@ El frontend está diseñado con un enfoque **Mobile-First**, garantizando que lo
 
 ---
 
-## 📊 Métrica de Ingeniería y Estimación
-El desarrollo se basó en una estimación científica utilizando el método de **Puntos de Función (IFPUG Standard)**, asegurando la trazabilidad entre requerimientos y esfuerzo:
-
-* **Tamaño Funcional:** 53 AFP (Puntos de Función Ajustados).
-* **Esfuerzo Técnico:** 636 Horas Hombre.
-* **Productividad Estimada:** 12 hs/PF.
-* **Presupuesto Proyectado:** $13.365 USD (Incluye Infraestructura Cloud y Soporte).
-
----
-
 ## 👥 Equipo de Desarrollo (JGJ)
 * **Gabriel Fagundez** - Lead Developer (Arquitectura y Frontend).
 * **Jazmín Chanampa** - Analista de Dominio (Requerimientos y Validación).
